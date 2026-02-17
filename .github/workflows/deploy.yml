@@ -18,6 +18,11 @@ jobs:
           host: ${{ secrets.GCP_HOST }}
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
+          port: 22
+          debug: true
+          # Disable strict host key checking for first-time connections
+          # Remove this after first successful connection
+          script_stop: false
           script: |
             # Navigate to the project directory
             cd /opt/openclaw-bot || git clone https://github.com/${{ github.repository }} /opt/openclaw-bot
