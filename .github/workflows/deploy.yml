@@ -34,13 +34,16 @@ jobs:
             # Update permissions
             chmod +x setup.sh
             
+            # Setup permissions for data folder (UID 1000 is node user in container)
+            mkdir -p data/openclaw
+            sudo chown -R 1000:1000 data/openclaw
+            chmod -R 775 data/openclaw
+
             # Setup .env file with secrets from GitHub
             cp .env.example .env
             echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
             echo "OPENCLAW_GATEWAY_TOKEN=${{ secrets.OPENCLAW_GATEWAY_TOKEN }}" >> .env
-            
-            # Allow external access
-            sed -i 's/OPENCLAW_BIND_IP=127.0.0.1/OPENCLAW_BIND_IP=0.0.0.0/g' .env
+            echo "OPENCLAW_BIND_IP=0.0.0.0" >> .env
             
             # Pull latest images and restart containers
             docker compose pull
