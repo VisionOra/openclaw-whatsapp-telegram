@@ -25,8 +25,8 @@ jobs:
           script_stop: false
           script: |
             # Navigate to the project directory
-            cd /opt/openclaw-bot || git clone https://github.com/${{ github.repository }} /opt/openclaw-bot
-            cd /opt/openclaw-bot
+            cd ~/openclaw-bot || git clone https://github.com/${{ github.repository }} ~/openclaw-bot
+            cd ~/openclaw-bot
             
             # Pull latest changes
             git pull origin main
