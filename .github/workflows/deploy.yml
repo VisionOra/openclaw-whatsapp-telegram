@@ -39,6 +39,9 @@ jobs:
             echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
             echo "OPENCLAW_GATEWAY_TOKEN=${{ secrets.OPENCLAW_GATEWAY_TOKEN }}" >> .env
             
+            # Allow external access
+            sed -i 's/OPENCLAW_BIND_IP=127.0.0.1/OPENCLAW_BIND_IP=0.0.0.0/g' .env
+            
             # Pull latest images and restart containers
             docker compose pull
             docker compose down --remove-orphans
