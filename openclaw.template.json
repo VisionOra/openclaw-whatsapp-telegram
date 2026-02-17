@@ -1,0 +1,89 @@
+{
+  "env": {
+    "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "openai/gpt-4o",
+        "fallbacks": [
+          "openai/gpt-4o-mini"
+        ]
+      },
+      "models": {
+        "openai/gpt-4o": {
+          "alias": "gpt4o"
+        },
+        "openai/gpt-4o-mini": {
+          "alias": "gpt4o-mini"
+        }
+      },
+      "workspace": "~/.openclaw/workspace",
+      "timeoutSeconds": 600,
+      "maxConcurrent": 3
+    },
+    "list": [
+      {
+        "id": "main",
+        "identity": {
+          "name": "Taxim Bot",
+          "theme": "helpful AI assistant powered by OpenAI"
+        }
+      }
+    ]
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto"
+  },
+  "session": {
+    "dmScope": "per-channel-peer",
+    "reset": {
+      "mode": "idle",
+      "idleMinutes": 120
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "dmPolicy": "pairing",
+      "allowFrom": [
+        "*"
+      ],
+      "groupPolicy": "allowlist",
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      },
+      "debounceMs": 0,
+      "mediaMaxMb": 50
+    }
+  },
+  "logging": {
+    "level": "info",
+    "consoleLevel": "info",
+    "redactSensitive": "tools"
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "lan",
+    "controlUi": {
+      "enabled": true
+    },
+    "auth": {
+      "mode": "token",
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    },
+    "reload": {
+      "mode": "hybrid"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "whatsapp": {
+        "enabled": true
+      }
+    }
+  }
+}
