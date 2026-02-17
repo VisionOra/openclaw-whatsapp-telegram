@@ -131,51 +131,10 @@ done
 # ── Step 6: Run doctor (first run only) ──────────────────────────────
 if [[ "$FIRST_RUN" == true ]]; then
     info "Running doctor to validate and finalize config..."
-    # CLI shares network with gateway via network_mode, so it can reach ws://127.0.0.1:18789
     docker compose run --rm openclaw-cli doctor --fix --yes 2>&1 | tail -5 || warn "Doctor had warnings (non-fatal)."
     ok "Config validated by doctor."
 
-    # Bootstrap device pairing for the CLI so future CLI commands work instantly
-    info "Bootstrapping CLI device pairing..."
-    DEVICE_FILE="data/openclaw/identity/device.json"
-    if [[ -f "$DEVICE_FILE" ]]; then
-        DEVICE_ID=$(python3 -c "import json; print(json.load(open('$DEVICE_FILE'))['deviceId'])" 2>/dev/null || echo "")
-        PUBLIC_KEY=$(python3 -c "
-import json, base64
-pem = json.load(open('$DEVICE_FILE'))['publicKeyPem']
-raw = pem.replace('-----BEGIN PUBLIC KEY-----','').replace('-----END PUBLIC KEY-----','').strip()
-decoded = base64.b64decode(raw)
-# Ed25519 SubjectPublicKeyInfo: 12-byte header + 32-byte key
-key_bytes = decoded[12:]
-print(base64.urlsafe_b64encode(key_bytes).decode().rstrip('='))
-" 2>/dev/null || echo "")
-
-        if [[ -n "$DEVICE_ID" && -n "$PUBLIC_KEY" ]]; then
-            NOW_MS=$(python3 -c "import time; print(int(time.time()*1000))")
-            cat > data/openclaw/devices/paired.json <<EOF
-{
-  "$DEVICE_ID": {
-    "deviceId": "$DEVICE_ID",
-    "publicKey": "$PUBLIC_KEY",
-    "platform": "linux",
-    "clientId": "cli",
-    "clientMode": "cli",
-    "role": "operator",
-    "roles": ["operator"],
-    "scopes": ["operator.admin", "operator.approvals", "operator.pairing"],
-    "pairedAt": $NOW_MS,
-    "label": "setup-cli"
-  }
-}
-EOF
-            echo "{}" > data/openclaw/devices/pending.json
-            ok "CLI device paired."
-        else
-            warn "Could not auto-pair CLI device. You may need to pair manually."
-        fi
-    fi
-
-    # Restart gateway to pick up pairing changes
+    # Restart gateway to pick up any doctor changes
     docker compose restart openclaw-gateway
     sleep 5
 fi
@@ -196,17 +155,14 @@ echo ""
 echo "  Next steps:"
 echo ""
 echo "  1. Open the Control UI link above in your browser."
-echo "     (The token is in the URL — the UI will connect automatically.)"
+echo "     (The token is in the URL — the UI will auto-connect, no pairing needed.)"
 echo ""
 echo "  2. Link WhatsApp:"
 echo "     docker exec -it openclaw-gateway node openclaw.mjs channels login --channel whatsapp"
 echo "     Then scan the QR code: WhatsApp > Settings > Linked Devices > Link a Device"
 echo ""
-echo "  3. If the Control UI shows 'pairing required', approve your browser:"
-echo "     docker exec openclaw-gateway node openclaw.mjs devices list"
-echo "     docker exec openclaw-gateway node openclaw.mjs devices approve <requestId>"
-echo ""
-echo "  4. Verify everything:"
+echo "  3. Verify everything:"
+echo "     docker exec openclaw-gateway node openclaw.mjs status"
 echo "     docker exec openclaw-gateway node openclaw.mjs channels status"
 echo ""
 echo "  Useful commands:"

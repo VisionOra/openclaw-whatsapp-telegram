@@ -69,7 +69,8 @@
     "mode": "local",
     "bind": "lan",
     "controlUi": {
-      "enabled": true
+      "enabled": true,
+      "allowInsecureAuth": true
     },
     "auth": {
       "mode": "token",
