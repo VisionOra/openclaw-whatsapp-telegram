@@ -1,0 +1,46 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USERNAME }}
+          key: ${{ secrets.GCP_SSH_KEY }}
+          script: |
+            # Navigate to the project directory
+            cd /opt/openclaw-bot || git clone https://github.com/${{ github.repository }} /opt/openclaw-bot
+            cd /opt/openclaw-bot
+            
+            # Pull latest changes
+            git pull origin main
+            
+            # Update permissions
+            chmod +x setup.sh
+            
+            # Setup .env file with secrets from GitHub
+            cp .env.example .env
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+            echo "OPENCLAW_GATEWAY_TOKEN=${{ secrets.OPENCLAW_GATEWAY_TOKEN }}" >> .env
+            
+            # Pull latest images and restart containers
+            docker compose pull
+            docker compose down --remove-orphans
+            docker compose up -d
+            
+            # Health check
+            echo "Waiting for service to become healthy..."
+            sleep 15
+            docker compose ps
+            docker logs openclaw-gateway --tail 20
