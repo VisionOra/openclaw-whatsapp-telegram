@@ -4,6 +4,8 @@ services:
     container_name: openclaw-gateway
     user: "1000:1000"
     environment:
+      HOST: "0.0.0.0"
+      OPENCLAW_BIND_IP: "0.0.0.0"
       HOME: /home/node
       TERM: xterm-256color
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
